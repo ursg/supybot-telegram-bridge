@@ -77,6 +77,13 @@ class TelegramBridge(callbacks.Plugin):
         last_name = user.get("last_name", "")
         name = user.get("first_name", str(user_id)) + last_name
         chosen = user.get("username", name)
+        namelookup = {"T_101": "T-101",
+                "MikaRautio": "luftwaffle",
+                "Mr the truckPerson being thing": "truck",
+                "AnttiSvenn": "kakka",
+                "salainensaksalainen": "urs"}
+        if namelookup.has_key(chosen):
+            chosen = namelookup[chosen]
         return user_id, chosen
 
     def _tg_repr_location(self, location):
