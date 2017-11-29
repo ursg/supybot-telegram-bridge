@@ -28,7 +28,6 @@
 
 ###
 
-from .telegram import TelegramBot
 import supybot.callbacks as callbacks
 import supybot.ircmsgs as ircmsgs
 
@@ -38,9 +37,10 @@ import time
 import sys
 
 import importlib
-from . import telegram
-importlib.reload(telegram)
-
+import telegram
+from telegram import TelegramBot
+#importlib.reload(telegram)
+import unicodedata
 
 class TelegramBridge(callbacks.Plugin):
     """Add the help for "@plugin help TelegramBridge" here
@@ -64,7 +64,7 @@ class TelegramBridge(callbacks.Plugin):
         self._start_telegram_loop()
 
     def _feed_to_supybot(self, channel, author, text):
-        new_msg = ircmsgs.privmsg(channel, text)
+        new_msg = ircmsgs.privmsg(channel, text.encode("utf-8","replace"))
         new_msg.prefix = self._tgIrc.prefix
         new_msg.tag("from_telegram")
         new_msg.nick = author
@@ -100,13 +100,19 @@ class TelegramBridge(callbacks.Plugin):
             object = message.get(type)
             if object:
                 if type == "sticker":
-                    text = "<sticker {}>".format(object.get("emoji"))
+                    text = object.get("emoji")
+                    # Decode not required, json is already utf8
+                    #text = text.decode("utf-8","replace")  
+                    #text = unicodedata.name(text)
+                    text = u"<sticker {}>".format(text)
+                    #text = text.encode("utf-8","replace")
+                    #text = "<sticker>"
                 elif type == "location":
-                    text = self._tg_repr_location(object)
+                    text = self._tg_repr_location(object).encode("utf-8","replace")
                 elif type == "contact":
-                    text = self._tg_repr_contact(object)
+                    text = self._tg_repr_contact(object).encode("utf-8","replace")
                 else:
-                    text = "<{}>".format(type)
+                    text = "<{}>".format(type.encode("utf-8","replace"))
                 break
         return text
 
@@ -171,12 +177,12 @@ class TelegramBridge(callbacks.Plugin):
     def _send_to_chat(self, text, chatId):
         if sys.version_info[0] < 3:
             text = text.decode("utf8", "replace")
-            text = text.encode("utf8")
+            text = text.encode("utf8", "replace")
         self._tg.send_message(chatId, text)
 
     def _send_irc_message(self, channel, text):
         if sys.version_info[0] < 3:
-            text = text.encode("utf8", "replace")
+            text = text.encode("utf-8", "replace")
         new_msg = ircmsgs.privmsg(channel, text)
         new_msg.tag("from_telegram")
         self._tgIrc.queueMsg(new_msg)
@@ -215,7 +221,7 @@ class TelegramBridge(callbacks.Plugin):
             topic = topic.decode("utf8", "replace")
         line = u"%s: %s" % (channel, topic)
         if sys.version_info[0] < 3:
-            line = line.encode("utf8")
+            line = line.encode("utf8", "replace")
         self._send_to_chat(line)
 
     def outFilter(self, irc, msg):
