@@ -81,6 +81,8 @@ class TelegramBridge(callbacks.Plugin):
                 "MikaRautio": "luftwaffle",
                 "Mr the truckPerson being thing": "truck",
                 "AnttiSvenn": "kakka",
+                "lupinesse": "jenni",
+                "Tuhox": "DDT",
                 "salainensaksalainen": "urs"}
         if namelookup.has_key(chosen):
             chosen = namelookup[chosen]
